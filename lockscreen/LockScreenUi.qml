@@ -327,8 +327,8 @@ Item {
                 ]
 
                 Loader {
-                    Layout.topMargin: Kirigami.Units.smallSpacing // some distance to the password field
                     Layout.fillWidth: true
+                    Layout.bottomMargin: Kirigami.Units.gridUnit // gap before the power buttons
                     Layout.preferredHeight: item ? item.implicitHeight : 0
                     active: config.showMediaControls
                     source: "MediaControls.qml"

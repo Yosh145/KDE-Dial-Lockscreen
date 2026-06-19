@@ -41,7 +41,7 @@ Item {
     property real ringWidth: Math.max(6, Math.round(Math.min(width, height) * 0.07))
     readonly property real ringRadius: Math.min(width, height) / 2 - ringWidth - 4
 
-    // --- Colours (BetterLockScreen scheme; tweak here) --------------------
+    //? --- Colors ---------------------------------------------------------
     readonly property color colIdleRing: "#003366"          // main
     readonly property color colVerRing: "#3584e4"           // verifying (complementary blue)
     readonly property color colWrongRing: "#8B0000"         // dark red
@@ -67,8 +67,8 @@ Item {
     readonly property real highlightArcDeg: 26
 
     // --- Verifying segmented spinner -------------------------------------
-    property color spinnerColor: "#5aa0ee"        // colour of the lit segments
-    property int segmentCount: 12                 // number of ring segments
+    property color spinnerColor: "#006400"        // colour of the lit segments
+    property int segmentCount: 8                 // number of ring segments
     property int spinIndex: 0                     // current bright segment (advances)
     readonly property real segmentGapFrac: 0.32   // gap as a fraction of each segment pitch
     readonly property int spinTrail: 5            // length of the bright trailing head
@@ -80,7 +80,6 @@ Item {
     }
 
     function flash(c) {
-        // Snappy: highlight appears instantly and is cleared quickly, no fade.
         highlightColor = c;
         highlightStart = Math.random() * 360;
         highlightOpacity = 1.0;
@@ -97,7 +96,7 @@ Item {
         if (delta > 0) {
             flash(keyhlColor);
             if (dialState === "wrong" || dialState === "success") {
-                dialState = "idle"; // user started typing again
+                dialState = "idle"; // user typing
             }
         } else if (delta === -1) {
             flash(bshlColor);
@@ -112,7 +111,7 @@ Item {
         target: authenticator
         function onFailed(kind) {
             if (kind !== 0) {
-                return; // ignore non-interactive (fingerprint/smartcard) failures here
+                return; // ignore non-interactive failures here
             }
             dial.dialState = "wrong";
             wrongRevertTimer.restart();
@@ -122,7 +121,7 @@ Item {
         }
     }
 
-    // Belt-and-suspenders: kscreenlocker also clears the password ~3s after a
+    // kscreenlocker also clears the password ~3s after a
     // failure (which MainBlock turns into reset()), but revert anyway in case
     // the user just sits there.
     Timer {
@@ -131,14 +130,14 @@ Item {
         onTriggered: if (dial.dialState === "wrong") dial.dialState = "idle"
     }
 
-    // Snappy keystroke blink: clear the highlight shortly after it appears.
+    // clear the highlight shortly after it appears.
     Timer {
         id: highlightClearTimer
         interval: 90
         onTriggered: { dial.highlightOpacity = 0; canvas.requestPaint(); }
     }
 
-    // Verifying spinner: advance the bright segment around the ring.
+    // advance the bright segment around the ring.
     Timer {
         id: spinTimer
         interval: 70
@@ -168,7 +167,7 @@ Item {
             ctx.fillStyle = dial.insideColor;
             ctx.fill();
 
-            // Ring: solid normally; a segmented spinner while verifying
+            //solid normally
             if (dial.dialState === "verifying") {
                 const N = dial.segmentCount;
                 const pitch = TAU / N;
@@ -195,7 +194,7 @@ Item {
                 ctx.stroke();
             }
 
-            // Keystroke highlight arc (snappy flash)
+            // Keystroke highlight arc
             if (dial.highlightOpacity > 0) {
                 const h0 = dial.highlightStart * Math.PI / 180;
                 const hlen = dial.highlightArcDeg * Math.PI / 180;

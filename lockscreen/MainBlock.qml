@@ -61,9 +61,16 @@ SessionManagementScreen {
     Item {
         id: dialContainer
         Layout.alignment: Qt.AlignHCenter
-        Layout.topMargin: Kirigami.Units.smallSpacing
+        Layout.topMargin: 0
         implicitWidth: dial.implicitWidth
         implicitHeight: dial.implicitHeight
+        // Reserve the dial's full height so the layout can't compress this slot
+        // (the ring is a fixed-size canvas). Without this the dial spills over
+        // the media controls below when music is playing; with it, the media
+        // controls are pushed down to make room.
+        Layout.minimumHeight: dial.implicitHeight
+        Layout.preferredHeight: dial.implicitHeight
+        Layout.preferredWidth: dial.implicitWidth
 
         DialIndicator {
             id: dial
@@ -140,17 +147,11 @@ SessionManagementScreen {
         }
     }
 
-    // i3lock-style prompt beneath the dial (replaces the field placeholder).
-    PlasmaComponents3.Label {
-        Layout.alignment: Qt.AlignHCenter
-        Layout.topMargin: Kirigami.Units.smallSpacing
-        Layout.maximumWidth: Kirigami.Units.gridUnit * 16
-        Layout.fillWidth: true
-        horizontalAlignment: Text.AlignHCenter
-        wrapMode: Text.WordWrap
-        textFormat: Text.PlainText
-        text: i18ndc("plasma_shell_org.kde.plasma.desktop", "@info:usagetip", "Type password to unlock…")
-    }
+    // NOTE: the "Type password to unlock…" prompt label was intentionally
+    // omitted so the full-size dial and the now-playing media strip both fit
+    // inside KDE's height-capped central area without overlapping the power
+    // buttons. To bring it back, shrink `dialUnits` in DialIndicator.qml to make
+    // room, then add a PlasmaComponents3.Label here.
 
     component FailableLabel : PlasmaComponents3.Label {
         id: _failableLabel
@@ -174,6 +175,15 @@ SessionManagementScreen {
             function onNoninteractiveError(kind, authenticator) {
                 if (kind & _failableLabel.kind) {
                     _failableLabel.text = Qt.binding(() => authenticator.errorMessage)
+                    _rejectAnimation.start()
+                }
+            }
+            // On a wrong password (interactive auth → kind 0), replace the hint
+            // (e.g. "(or scan your fingerprint…)") with "Try again". The _timer
+            // started by the reject animation reverts it back to `label`.
+            function onFailed(kind) {
+                if (kind === 0) {
+                    _failableLabel.text = i18ndc("plasma_shell_org.kde.plasma.desktop", "@info:usagetip", "Try again")
                     _rejectAnimation.start()
                 }
             }
