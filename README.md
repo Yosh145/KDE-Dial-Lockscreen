@@ -1,17 +1,46 @@
 # i3lock-style Dial for the KDE Plasma Lock Screen
 
-Replaces the **boring password text field** on the KDE Plasma 6 lock screen with
-an **i3lock-style reactive ring "dial"** — the ring in the center that lights up
-as you type, runs a segmented spinner while it checks your password, then flashes
-**dark-red on failure** / **dark-green on success**. Everything else about the
-lock screen stays stock (clock, wallpaper, user avatar, virtual keyboard,
-fingerprint/smartcard). The power-button row is set to **Sleep · Restart · Shut
-Down · Switch User**.
+Replace the boring password text field on the **KDE Plasma 6** lock screen with an
+**i3lock-style reactive ring "dial"** — without leaving the real KDE locker.
 
-It’s the look of i3lock, but it’s the *real* KDE locker — so Super+L, lock on
+[![KDE Plasma 6](https://img.shields.io/badge/KDE%20Plasma-6.6-1d99f3?logo=kde&logoColor=white)](https://kde.org/plasma-desktop/)
+[![Wayland & X11](https://img.shields.io/badge/Wayland%20%26%20X11-supported-green)](#requirements)
+[![No build step](https://img.shields.io/badge/build-none%20(just%20QML)-lightgrey)](#what-it-changes)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
+
+The ring lights up as you type, runs a segmented spinner while it checks your
+password, then flashes **dark-red on failure** / **dark-green on success**.
+Everything else stays stock — clock, wallpaper, user avatar, virtual keyboard,
+fingerprint/smartcard. The power-button row becomes **Sleep · Restart · Shut Down
+· Switch User**.
+
+It’s the *look* of i3lock, but it’s the **real KDE locker** — so Super+L, lock on
 suspend/resume, idle lock and lock-after-reboot all work with no extra setup.
 
-![left: i3lock dial · right: Sleep/Restart/Shut Down]( ) <!-- add a screenshot -->
+<!-- TODO: add a screenshot/GIF here, e.g.:
+     ![the dial reacting as you type, then the power-button row](docs/screenshot.png)
+     A short GIF of typing → spinner → green/red is the single most useful addition. -->
+
+## Features
+
+- **Reactive ring** — flashes on every keystroke and backspace (characters are never shown).
+- **Live auth states** — idle (blue) → spinner (verifying) → red (wrong) / green (success).
+- **Real locker, zero compromises** — `PasswordSync`, grace lock, virtual keyboard,
+  clear, fingerprint and smartcard all keep working; the dial is purely visual.
+- **Power row** — Sleep · Restart · Shut Down · Switch User.
+- **No build step** — three QML files; nothing to compile.
+- **Safe & reversible** — full timestamped backup before any write, with `uninstall` /
+  `apply`, plus auto-revert if an install fails midway.
+- **Try before you touch anything** — `./preview.sh` runs it sandboxed, no root, no real lock.
+
+## Quick start
+
+```sh
+git clone https://github.com/Yosh145/KDE-Dial-Lockscreen.git
+cd KDE-Dial-Lockscreen
+./preview.sh          # sandboxed preview — no root, your real lock screen is untouched
+sudo ./install.sh     # back up the originals, then install the dial system-wide
+```
 
 ## Why it installs into a system file
 
@@ -69,6 +98,10 @@ loginctl lock-session       # or press Super+L
 Set the lock wallpaper (any image, PNG or JPG) in **System Settings → Screen
 Locking → Appearance**.
 
+> **Scope:** this covers **kscreenlocker** only — Super+L, idle lock, and
+> suspend/resume. The screen shown after a full reboot or *Switch User* is a
+> separate program (the Plasma Login Manager) and is intentionally left stock.
+
 ## Revert / manage
 
 ```sh
@@ -100,7 +133,7 @@ first, so `uninstall` always restores the version matching your current Plasma.
   the dial edits applied. On a noticeably different Plasma version they may drift.
   If the lock screen looks wrong after installing, re-derive them:
   1. Copy your system’s stock `MainBlock.qml` and `LockScreenUi.qml` from the
-     lockscreen dir into `KDE/lockscreen/`.
+     lockscreen dir into `lockscreen/`.
   2. Re-apply the two edits: in `MainBlock.qml` hide the `PasswordField` + login
      button and mount `DialIndicator { passwordField: passwordBox }`; in
      `LockScreenUi.qml` add the Restart/Shut Down `ActionButton`s. (Diff against
